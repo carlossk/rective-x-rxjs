@@ -1,22 +1,30 @@
 import { Observable, Observer } from 'rxjs';
+import { take } from 'rxjs/operators';
 
-const observer:Observer<any>={
-    next:value=>console.log('Next: ',value),
-    error: error=>console.warn('error: ',error),
-    complete: ()=>console.info('complete')
+
+const observer: Observer<any> = {
+    next: value => console.log('Next: ', value),
+    error: error => console.warn('error: ', error),
+    complete: () => console.info('complete')
 }
 
-const obs$ = new Observable(sub=>{
-        sub.next('Hola');
-        sub.next('Carlos');
 
-        sub.complete();
-        sub.next('no se ejecuta');
-        sub.next('x2');
+const interval$ = new Observable<number>(sub => {
+    let count = 0;
+    const interval = setInterval(() => {
+        count = count + 1;
+        sub.next(count)
+    }, 1000);
+    return () => {
+        clearInterval(interval);
+        console.log('observable destroyed')
+    }
 })
 
-obs$.subscribe(observer);
+const sub = interval$.subscribe(num => console.log('num: ', num));
 
-
-
+setTimeout(() => {
+    sub.unsubscribe();
+    console.log('unsubcribe')
+},4000)
 
